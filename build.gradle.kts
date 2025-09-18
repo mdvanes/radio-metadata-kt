@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.9.24"
+    kotlin("jvm") version "1.9.25"
     `maven-publish`
     signing
 }
@@ -8,7 +8,7 @@ group = "nl.mdworld"
 version = System.getenv("RELEASE_VERSION") ?: "0.1.0-SNAPSHOT"
 
 kotlin {
-    jvmToolchain(25)
+    jvmToolchain(21)
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
     }

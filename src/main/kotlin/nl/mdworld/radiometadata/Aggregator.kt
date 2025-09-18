@@ -1,19 +1,26 @@
 package nl.mdworld.radiometadata
 
-import java.time.Instant
-
-/** Simple aggregator that normalizes raw metadata lines into structured objects. */
+/** Simple aggregator that normalizes raw metadata lines into a list of tracks. */
 class RadioMetadataAggregator(private val station: StationInfo) {
 
     @Volatile
-    private var last: RadioMetadata = RadioMetadata(station, null)
+    private var last: RadioMetadata = RadioMetadata(
+        song = SongInfo(artist = null, title = null)
+    )
 
     fun ingestRaw(rawLine: String): RadioMetadata {
         val (artist, title) = MetadataParsers.parseArtistTitle(rawLine)
-        val track = TrackInfo(artist = artist, title = title, raw = rawLine, startedAt = Instant.now())
-        val snapshot = RadioMetadata(station = station, currentTrack = track, updatedAt = Instant.now())
-        last = snapshot
-        return snapshot
+        val track = TrackInfo(
+            song = SongInfo(artist = artist, title = title)
+        )
+        // Represent latest track as top-level song plus tracks history (prepend)
+        last = RadioMetadata(
+            time = last.time,
+            broadcast = last.broadcast,
+            song = track.song,
+            tracks = listOf(track) + last.tracks
+        )
+        return last
     }
 
     fun current(): RadioMetadata = last

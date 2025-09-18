@@ -34,6 +34,7 @@ This repository now includes an `examples` subproject with a runnable entrypoint
 
 Run the example (defaults to `npo2`):
 ```bash
+sdk use java 21.0.8-tem
 ./gradlew :examples:run
 ```
 
@@ -225,9 +226,11 @@ Apache 2.0 (default in POM). Replace if needed.
 
 ## NOTES
 
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+<!-- export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 echo $JAVA_HOME
-java -version
+java -version -->
+using sdkman:
+sdk use java 21.0.8-tem
 gradle wrapper --gradle-version 8.9 --distribution-type all
 
 ## TODO

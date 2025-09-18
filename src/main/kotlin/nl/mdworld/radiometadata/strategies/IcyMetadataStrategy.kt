@@ -17,17 +17,19 @@ class IcyMetadataStrategy : MetadataStrategy {
         return listOf(RadioMetadata(song = SongInfo(artist = artist, title = title)))
     }
 
-    override suspend fun fetchMetadata(streamUrl: String): List<RadioMetadata> = try {
-        val icyData = icyFetcher.fetchICYMetadata(streamUrl)
-        if (icyData.isNotEmpty()) {
-            val streamTitle = icyData["streamtitle"]
-            if (!streamTitle.isNullOrEmpty()) return parseIcyMetadata("StreamTitle='$streamTitle';")
-            val title = icyData["title"] ?: icyData["name"] ?: "Unknown"
-            val artist = icyData["artist"] ?: icyData["name"]
-            listOf(RadioMetadata(song = SongInfo(artist = artist, title = title)))
-        } else emptyList()
-    } catch (e: Exception) {
-        println("IcyMetadataStrategy: Error fetching ICY metadata: ${e.message}")
-        emptyList()
+    override suspend fun fetchMetadata(streamUrl: String): List<RadioMetadata> {
+        return try {
+            val icyData = icyFetcher.fetchICYMetadata(streamUrl)
+            if (icyData.isNotEmpty()) {
+                val streamTitle = icyData["streamtitle"]
+                if (!streamTitle.isNullOrEmpty()) return parseIcyMetadata("StreamTitle='$streamTitle';")
+                val title = icyData["title"] ?: icyData["name"] ?: "Unknown"
+                val artist = icyData["artist"] ?: icyData["name"]
+                listOf(RadioMetadata(song = SongInfo(artist = artist, title = title)))
+            } else emptyList()
+        } catch (e: Exception) {
+            println("IcyMetadataStrategy: Error fetching ICY metadata: ${e.message}")
+            emptyList()
+        }
     }
 }
