@@ -29,6 +29,25 @@ fun main() = runBlocking {
 }
 ```
 
+### Examples Module
+This repository now includes an `examples` subproject with a runnable entrypoint demonstrating preset usage.
+
+Run the example (defaults to `npo2`):
+```bash
+./gradlew :examples:run
+```
+
+Pass a station via arguments or environment variable:
+```bash
+./gradlew :examples:run --args="sky"
+STATION=sky ./gradlew :examples:run
+```
+
+Output format:
+```
+Current: <artist?> - <title?>
+```
+
 ### Fetch via ICY headers
 ```kotlin
 import kotlinx.coroutines.runBlocking
