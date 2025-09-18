@@ -36,6 +36,7 @@ Run the example (defaults to `npo2`):
 ```bash
 sdk use java 21.0.8-tem
 ./gradlew :examples:run
+./gradlew :examples:run --quiet --args="--table"
 ```
 
 Pass a station via arguments or environment variable:
