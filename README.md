@@ -162,9 +162,6 @@ gpr.user=your-github-username
 gpr.key=your-personal-access-token
 ```
 
-## License
-Apache 2.0 (default in POM). Replace if needed.
-
 ## NOTES
 
 <!-- export JAVA_HOME=$(/usr/libexec/java_home -v 17)
@@ -176,6 +173,5 @@ gradle wrapper --gradle-version 8.9 --distribution-type all
 
 ## TODO
 
-- choose license
 - use KTOR
 - specify usage
