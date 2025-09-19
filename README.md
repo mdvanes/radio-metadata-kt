@@ -116,7 +116,7 @@ Commit the generated files so consumers build with a consistent Gradle version.
 This library is published to GitHub Packages. To publish a new version:
 
 ### Setup
-1. Create a Personal Access Token (PAT) with `read:packages` and `write:packages` permissions
+1. Create a Personal Access Token (PAT) with `read:packages` and `write:packages` permissions. Only "tokens (classic)" is supported at this time: https://docs.github.com/en/packages/learn-github-packages/publishing-a-package#publishing-a-package
 2. Set environment variables:
    ```bash
    export GITHUB_ACTOR=your-github-username

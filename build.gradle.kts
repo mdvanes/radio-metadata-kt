@@ -37,7 +37,7 @@ publishing {
             pom {
                 name.set("radio-metadata")
                 description.set("A Kotlin library for aggregating and normalizing live radio stream metadata (station, current track, artist, timing)")
-                url.set("https://github.com/REPLACE_ME/radio-metadata")
+                url.set("https://github.com/${System.getenv("GITHUB_ACTOR")}/radio-metadata-kt")
                 licenses {
                     license {
                         name.set("The Apache License, Version 2.0")
@@ -52,9 +52,9 @@ publishing {
                     }
                 }
                 scm {
-                    url.set("https://github.com/REPLACE_ME/radio-metadata")
-                    connection.set("scm:git:git://github.com/REPLACE_ME/radio-metadata.git")
-                    developerConnection.set("scm:git:ssh://github.com:REPLACE_ME/radio-metadata.git")
+                    url.set("https://github.com/${System.getenv("GITHUB_ACTOR")}/radio-metadata-kt")
+                    connection.set("scm:git:git://github.com/${System.getenv("GITHUB_ACTOR")}/radio-metadata-kt.git")
+                    developerConnection.set("scm:git:ssh://github.com:${System.getenv("GITHUB_ACTOR")}/radio-metadata-kt.git")
                 }
             }
         }
@@ -71,15 +71,15 @@ publishing {
                 password = System.getenv("OSSRH_PASSWORD")
             }
         }
-        // GitHub Packages example (uncomment and set owner)
-        // maven {
-        //     name = "GitHubPackages"
-        //     url = uri("https://maven.pkg.github.com/OWNER/radio-metadata")
-        //     credentials {
-        //         username = System.getenv("GITHUB_ACTOR")
-        //         password = System.getenv("GITHUB_TOKEN")
-        //     }
-        // }
+        // GitHub Packages
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/${System.getenv("GITHUB_ACTOR")}/radio-metadata-kt")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
 

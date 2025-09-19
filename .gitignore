@@ -22,3 +22,5 @@ local.properties
 
 # Generated reports
 reports/
+
+publish.sh
