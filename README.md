@@ -10,8 +10,20 @@ A Kotlin library for fetching and normalizing live radio metadata from multiple 
 - Lightweight immutable data classes (`RadioMetadata`, `SongInfo`, `BroadcastInfo`, `TimeInfo`)
 
 ## Quick Start
-Add the dependency (after publishing) to your `build.gradle.kts`:
+Add the GitHub Packages repository and dependency to your `build.gradle.kts`:
 ```kotlin
+repositories {
+    mavenCentral()
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/OWNER/radio-metadata-kt")
+        credentials {
+            username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+            password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+        }
+    }
+}
+
 dependencies {
     implementation("nl.mdworld:radio-metadata:0.1.0") // Adjust version
 }
@@ -99,128 +111,56 @@ gradle wrapper --gradle-version 8.9 --distribution-type all
 ```
 Commit the generated files so consumers build with a consistent Gradle version.
 
-## Versioning Strategy
-- Use semantic versions: MAJOR.MINOR.PATCH
-- Append `-SNAPSHOT` while iterating between releases
-- CI can set `RELEASE_VERSION` env var for reproducible builds (falls back to `0.1.0-SNAPSHOT`)
+## Publishing to GitHub Packages
 
-## Publishing (Maven Central / OSSRH)
-Configured plugins: `maven-publish` + `signing` (in-memory PGP). Publication name: `maven`.
+This library is published to GitHub Packages. To publish a new version:
 
-### Required Environment Variables
-| Variable | Purpose |
-|----------|---------|
-| `OSSRH_USERNAME` | Sonatype account username |
-| `OSSRH_PASSWORD` | Sonatype (OSSRH) password / token |
-| `SIGNING_KEY` | ASCII-armored PGP private key block (no passphrase lines trimmed) |
-| `SIGNING_PASSPHRASE` | Passphrase for the above key |
-| `RELEASE_VERSION` | Explicit version (e.g. 0.2.0 or 0.2.1-SNAPSHOT) |
+### Setup
+1. Create a Personal Access Token (PAT) with `read:packages` and `write:packages` permissions
+2. Set environment variables:
+   ```bash
+   export GITHUB_ACTOR=your-github-username
+   export GITHUB_TOKEN=your-personal-access-token
+   export RELEASE_VERSION=0.1.0  # or desired version
+   ```
 
-### Generating a PGP Key (if you do not have one)
+### Publishing
 ```bash
-gpg --full-generate-key # RSA 4096 recommended
-gpg --list-secret-keys --keyid-format=long
-# Export armored private key for SIGNING_KEY
-KEYID=REPLACE_WITH_LONG_KEYID
-gpg --export-secret-keys --armor "$KEYID" > private.asc
-# Export public key (optional: upload to keyserver) 
-gpg --export --armor "$KEYID" > public.asc
-```
-Copy the entire contents of `private.asc` (including BEGIN/END lines) into `SIGNING_KEY` environment variable in CI secret storage.
-
-### Local One-Off Publish (Snapshot)
-```bash
-export OSSRH_USERNAME=youruser
-export OSSRH_PASSWORD=yourpass
-export SIGNING_KEY="$(cat private.asc)"
-export SIGNING_PASSPHRASE=yourphrase
-export RELEASE_VERSION=0.1.1-SNAPSHOT
-./gradlew clean publish
-```
-Snapshot artifacts go to: https://s01.oss.sonatype.org/content/repositories/snapshots/
-
-### Local Release Publish
-```bash
-export RELEASE_VERSION=0.1.1
-./gradlew clean publish
-```
-Then log into Sonatype UI:
-1. Close the staging repository (validates & signs)  
-2. Release it (sync to Maven Central starts; may take 10–20 minutes)
-
-### Automating Release (CI Idea)
-Tag-driven pipeline sets `RELEASE_VERSION` from tag `vX.Y.Z`:
-```yaml
-# .github/workflows/release.yml
-name: Release
-on:
-  push:
-    tags: [ 'v*.*.*' ]
-jobs:
-  publish:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-          cache: gradle
-          server-id: OSSRH
-          server-username: OSSRH_USERNAME
-          server-password: OSSRH_PASSWORD
-          gpg-private-key: ${{ secrets.SIGNING_KEY }}
-          gpg-passphrase: ${{ secrets.SIGNING_PASSPHRASE }}
-      - name: Derive version
-        run: echo "RELEASE_VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
-      - name: Publish
-        env:
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_PASSPHRASE: ${{ secrets.SIGNING_PASSPHRASE }}
-        run: ./gradlew publish
-```
-
-### Verifying Published Artifact
-After sync completes:
-```bash
-# Check Maven Central (might need a few minutes)
-open "https://central.sonatype.com/search?name=radio-metadata"
-# Pull with Gradle dependency insight (example)
-./gradlew dependencyInsight --configuration runtimeClasspath --dependency radio-metadata
-```
-
-## GitHub Packages (Optional Secondary Registry)
-Uncomment the GitHub repo block in `build.gradle.kts` and replace `OWNER` with your org/user.
-Environment variables:
-- `GITHUB_ACTOR`
-- `GITHUB_TOKEN` (a PAT with `read:packages write:packages`)  
-Publish:
-```bash
-export RELEASE_VERSION=0.1.1-SNAPSHOT
-export GITHUB_ACTOR=yourhandle
-export GITHUB_TOKEN=ghp_xxx
 ./gradlew publishAllPublicationsToGitHubPackagesRepository
 ```
-Consumers must add the GitHub Packages repository to their settings to resolve.
 
-## Updating POM Metadata
-Edit in `build.gradle.kts` inside `pom {}`:
-- Replace placeholder SCM URLs (set canonical repo URL)
-- Update `group` (now `nl.mdworld` – change only if needed)
-- Set real developer id/name/email
-- Change license if not Apache 2.0
+### Consuming the Package
+To use this library in your project, add the GitHub Packages repository to your `build.gradle.kts`:
 
-## Troubleshooting
-- Unsigned artifacts error: ensure `SIGNING_KEY` and `SIGNING_PASSPHRASE` are set and wrapper picks them up (no stray quotes).  
-- 401 from OSSRH: verify credentials & that user has correct staging permissions.  
-- Module not visible on Maven Central yet: confirm staging repository released; allow propagation time.
-- GPG key issues: run `gpg --list-keys` to ensure key present; if using CI import via `actions/setup-java` parameters instead of manual env injection.
+```kotlin
+repositories {
+    mavenCentral()
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/OWNER/radio-metadata-kt")
+        credentials {
+            username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+            password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+        }
+    }
+}
 
-## Customize Coordinates
-Artifact coordinates: `nl.mdworld:radio-metadata:<version>`.
+dependencies {
+    implementation("nl.mdworld:radio-metadata:0.1.0")
+}
+```
+
+Set your credentials via environment variables or `gradle.properties`:
+```bash
+export USERNAME=your-github-username
+export TOKEN=your-personal-access-token
+```
+
+Or in `~/.gradle/gradle.properties`:
+```properties
+gpr.user=your-github-username
+gpr.key=your-personal-access-token
+```
 
 ## License
 Apache 2.0 (default in POM). Replace if needed.
