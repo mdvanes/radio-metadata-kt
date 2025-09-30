@@ -121,13 +121,15 @@ This library is published to GitHub Packages. To publish a new version:
    ```bash
    export GITHUB_ACTOR=your-github-username
    export GITHUB_TOKEN=your-personal-access-token
-   export RELEASE_VERSION=0.1.0  # or desired version
+   export RELEASE_VERSION=0.2.0  # or desired version
    ```
 
 ### Publishing
 ```bash
 ./gradlew publishAllPublicationsToGitHubPackagesRepository
 ```
+
+or upload a bundle to maven central: https://central.sonatype.org/publish/publish-portal-upload/
 
 ### Consuming the Package
 To use this library in your project, add the GitHub Packages repository to your `build.gradle.kts`:
