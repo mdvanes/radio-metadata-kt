@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "1.9.25"
+    kotlin("plugin.serialization") version "1.9.25"
     `maven-publish`
     signing
 }
@@ -24,6 +25,12 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
+    
+    // Ktor client dependencies
+    implementation("io.ktor:ktor-client-core:2.3.5")
+    implementation("io.ktor:ktor-client-cio:2.3.5")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.5")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.5")
 }
 
 tasks.test {

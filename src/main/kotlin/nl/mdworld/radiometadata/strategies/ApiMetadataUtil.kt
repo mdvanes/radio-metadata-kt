@@ -1,10 +1,15 @@
 package nl.mdworld.radiometadata.strategies
 
-import kotlinx.coroutines.Dispatchers
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -19,14 +24,36 @@ import nl.mdworld.radiometadata.SongInfo
 import nl.mdworld.radiometadata.TimeInfo
 import nl.mdworld.radiometadata.presets.NPO2_PRESET
 import nl.mdworld.radiometadata.presets.SKY_PRESET
-import java.net.HttpURLConnection
-import java.net.URL
 
 object ApiMetadataUtil {
     val PRESETS = mapOf(
         "npo2" to NPO2_PRESET,
         "sky" to SKY_PRESET
     )
+
+    private val client = HttpClient(CIO) {
+        install(ContentNegotiation) {
+            json(kotlinx.serialization.json.Json {
+                ignoreUnknownKeys = true
+                coerceInputValues = true
+            })
+        }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 10000
+            connectTimeoutMillis = 10000
+            socketTimeoutMillis = 10000
+        }
+        engine {
+            maxConnectionsCount = 1000
+            endpoint {
+                maxConnectionsPerRoute = 100
+                pipelineMaxSize = 20
+                keepAliveTime = 5000
+                connectTimeout = 10000
+                connectAttempts = 5
+            }
+        }
+    }
 
     suspend fun getRadioMetaData(config: Any): List<RadioMetadata> {
         val schema = when (config) {
@@ -73,15 +100,13 @@ object ApiMetadataUtil {
     private fun isValidSchema(schema: RadioSchema): Boolean =
         schema.name.isNotEmpty() && schema.urls.isNotEmpty() && schema.urls.all { it.url.isNotEmpty() && it.name.isNotEmpty() } && schema.paths.tracks.isNotEmpty()
 
-    private suspend fun fetchJson(url: String, headers: Map<String, String>?): JsonElement = withContext(Dispatchers.IO) {
-        try {
-            val connection = URL(url).openConnection() as HttpURLConnection
-            headers?.forEach { (key, value) -> connection.setRequestProperty(key, value) }
-            connection.requestMethod = "GET"
-            connection.connectTimeout = 10000
-            connection.readTimeout = 10000
-            val response = connection.inputStream.bufferedReader().use { it.readText() }
-            kotlinx.serialization.json.Json.parseToJsonElement(response)
+    private suspend fun fetchJson(url: String, headers: Map<String, String>?): JsonElement {
+        return try {
+            client.get(url) {
+                headers?.forEach { (key, value) -> 
+                    header(key, value) 
+                }
+            }.body<JsonElement>()
         } catch (e: Exception) {
             println("ApiMetadataUtil: Exception: ${e::class.simpleName} - ${e.message}")
             JsonObject(emptyMap())
